@@ -4,10 +4,7 @@ pipeline {
     environment {
         DEPLOY_DIR = "${WORKSPACE}/deploy/python-app"
         PATH = "/var/lib/jenkins/.local/bin:${PATH}"
-    }
-
-    options {
-        timestamps()
+        EMAIL_TO = "bitboxtraining@gmail.com"
     }
 
     stages {
@@ -23,10 +20,10 @@ pipeline {
                 dir('python-app') {
                     sh '''
                         echo "🐍 Installing Python dependencies..."
-                        if [ ! -f requirements.txt ]; then
-                            echo "⚠️ No requirements.txt found, skipping dependency install."
-                        else
+                        if [ -f requirements.txt ]; then
                             pip install --user -r requirements.txt
+                        else
+                            echo "⚠️ No requirements.txt found, skipping dependency install."
                         fi
                     '''
                 }
@@ -38,7 +35,12 @@ pipeline {
                 dir('python-app') {
                     sh '''
                         echo "🧪 Running tests..."
-                        pytest -q --disable-warnings || echo "⚠️ Some tests failed"
+                        if pytest -q --disable-warnings; then
+                            echo "✅ All tests passed!"
+                        else
+                            echo "❌ Some tests failed"
+                            exit 1
+                        fi
                     '''
                 }
             }
@@ -50,7 +52,7 @@ pipeline {
                     sh '''
                         echo "🚀 Deploying application..."
                         mkdir -p $DEPLOY_DIR
-                        cp -r app.py $DEPLOY_DIR/
+                        cp -r app.py requirements.txt $DEPLOY_DIR/
                         echo "✅ App deployed to $DEPLOY_DIR"
                     '''
                 }
@@ -60,20 +62,33 @@ pipeline {
 
     post {
         success {
-            echo "✅ Build succeeded!"
+            echo "🎉 Build succeeded!"
             emailext (
-                subject: "✅ SUCCESS: Python App Build #${BUILD_NUMBER}",
-                body: "The Python pipeline completed successfully.\n\nDeployed to: ${DEPLOY_DIR}",
-                to: "bitboxtraining@gmail.com"
+                subject: "✅ SUCCESS: Python App Pipeline",
+                body: """\
+                <h3>🎉 Build Successful</h3>
+                <p>The Python application has been successfully tested and deployed.</p>
+                <ul>
+                  <li><b>Job:</b> ${env.JOB_NAME}</li>
+                  <li><b>Build #:</b> ${env.BUILD_NUMBER}</li>
+                  <li><b>URL:</b> <a href='${env.BUILD_URL}'>${env.BUILD_URL}</a></li>
+                </ul>
+                """,
+                to: "${EMAIL_TO}",
+                mimeType: 'text/html'
             )
         }
+
         failure {
             echo "❌ Build failed!"
             emailext (
-                subject: "❌ FAILURE: Python App Build #${BUILD_NUMBER}",
-                body: "The Python pipeline failed.\nPlease check Jenkins logs.",
-                to: "bitboxtraining@gmail.com"
-            )
-        }
-    }
-}
+                subject: "❌ FAILURE: Python App Pipeline",
+                body: """\
+                <h3>🚨 Build Failed</h3>
+                <p>One or more stages of the Python pipeline failed.</p>
+                <ul>
+                  <li><b>Job:</b> ${env.JOB_NAME}</li>
+                  <li><b>Build #:</b> ${env.BUILD_NUMBER}</li>
+                  <li><b>URL:</b> <a href='${env.BUILD_URL}'>${env.BUILD_URL}</a></li>
+                </ul>
+                """,
