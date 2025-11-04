@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    environment {
+        DEPLOY_DIR = "${WORKSPACE}/deploy/python-app"
+    }
     stages {
         stage('Install') {
             steps {
@@ -8,7 +11,16 @@ pipeline {
         }
         stage('Test') {
             steps {
-                sh 'pytest -q'
+                sh 'pytest -q --disable-warnings'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh '''
+                    mkdir -p $DEPLOY_DIR
+                    cp -r app.py $DEPLOY_DIR/
+                    echo "App deployed to $DEPLOY_DIR"
+                '''
             }
         }
     }
