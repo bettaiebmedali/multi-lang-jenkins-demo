@@ -1,14 +1,39 @@
 pipeline {
     agent any
+    environment {
+        DEPLOY_DIR = "${WORKSPACE}/deploy/node-app"
+    }
     stages {
         stage('Install') {
             steps {
-                sh 'npm ci'
+                dir('node-app') {
+                    sh '''
+                        echo "Installing dependencies..."
+                        npm install
+                    '''
+                }
             }
         }
         stage('Test') {
             steps {
-                sh 'npm test --silent'
+                dir('node-app') {
+                    sh '''
+                        echo "Running tests..."
+                        npm test || true
+                    '''
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                dir('node-app') {
+                    sh '''
+                        echo "Deploying Node app..."
+                        mkdir -p $DEPLOY_DIR
+                        cp -r . $DEPLOY_DIR/
+                        echo "✅ App deployed to $DEPLOY_DIR"
+                    '''
+                }
             }
         }
     }

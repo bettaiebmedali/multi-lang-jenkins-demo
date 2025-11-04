@@ -1,15 +1,39 @@
 pipeline {
     agent any
-    tools { maven 'MAVEN' }
+    environment {
+        DEPLOY_DIR = "${WORKSPACE}/deploy/spring-boot-app"
+    }
     stages {
         stage('Build') {
             steps {
-                sh 'mvn -B -DskipTests clean package'
+                dir('spring-boot-app') {
+                    sh '''
+                        echo "Building Spring Boot app..."
+                        ./mvnw clean package -DskipTests
+                    '''
+                }
             }
         }
         stage('Test') {
             steps {
-                sh 'mvn test -q'
+                dir('spring-boot-app') {
+                    sh '''
+                        echo "Running unit tests..."
+                        ./mvnw test
+                    '''
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                dir('spring-boot-app') {
+                    sh '''
+                        echo "Deploying JAR file..."
+                        mkdir -p $DEPLOY_DIR
+                        cp target/*.jar $DEPLOY_DIR/
+                        echo "✅ Deployed to $DEPLOY_DIR"
+                    '''
+                }
             }
         }
     }

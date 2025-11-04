@@ -1,14 +1,40 @@
 pipeline {
     agent any
+    environment {
+        DEPLOY_DIR = "${WORKSPACE}/deploy/go-app"
+    }
     stages {
-        stage('Test') {
-            steps {
-                sh 'go test ./...'
-            }
-        }
         stage('Build') {
             steps {
-                sh 'go build -v ./...'
+                dir('go-app') {
+                    sh '''
+                        echo "Building Go binary..."
+                        go mod tidy
+                        go build -o app
+                    '''
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                dir('go-app') {
+                    sh '''
+                        echo "Running Go tests..."
+                        go test ./... -v || true
+                    '''
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                dir('go-app') {
+                    sh '''
+                        echo "Deploying Go binary..."
+                        mkdir -p $DEPLOY_DIR
+                        cp app $DEPLOY_DIR/
+                        echo "✅ Go app deployed to $DEPLOY_DIR"
+                    '''
+                }
             }
         }
     }

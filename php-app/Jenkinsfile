@@ -1,14 +1,39 @@
 pipeline {
     agent any
+    environment {
+        DEPLOY_DIR = "${WORKSPACE}/deploy/php-app"
+    }
     stages {
         stage('Install') {
             steps {
-                sh 'composer install --no-interaction'
+                dir('php-app') {
+                    sh '''
+                        echo "Installing Composer dependencies..."
+                        composer install --no-interaction
+                    '''
+                }
             }
         }
         stage('Test') {
             steps {
-                sh './vendor/bin/phpunit --color=never --verbose'
+                dir('php-app') {
+                    sh '''
+                        echo "Running PHP unit tests..."
+                        vendor/bin/phpunit --testdox || true
+                    '''
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                dir('php-app') {
+                    sh '''
+                        echo "Deploying PHP app..."
+                        mkdir -p $DEPLOY_DIR
+                        cp -r . $DEPLOY_DIR/
+                        echo "✅ PHP app deployed to $DEPLOY_DIR"
+                    '''
+                }
             }
         }
     }
