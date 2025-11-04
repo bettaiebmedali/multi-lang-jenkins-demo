@@ -92,3 +92,9 @@ pipeline {
                   <li><b>URL:</b> <a href='${env.BUILD_URL}'>${env.BUILD_URL}</a></li>
                 </ul>
                 """,
+                to: "${EMAIL_TO}",
+                mimeType: 'text/html'
+            )
+        }
+    }
+}
