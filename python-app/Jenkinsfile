@@ -3,27 +3,43 @@ pipeline {
 
     environment {
         DEPLOY_DIR = "${WORKSPACE}/deploy/python-app"
+        PATH = "/var/lib/jenkins/.local/bin:${PATH}"
     }
 
-    stage('Install') {
-    steps {
-        dir('python-app') {
-            sh '''
-                python3 -m venv venv
-                . venv/bin/activate
-                pip install -r requirements.txt
-            '''
+    stages {
+        stage('Install') {
+            steps {
+                dir('python-app') {
+                    sh '''
+                        echo "🐍 Installing Python dependencies..."
+                        pip install --user -r requirements.txt
+                    '''
+                }
+            }
         }
-    }
-}
 
-stage('Test') {
-    steps {
-        dir('python-app') {
-            sh '''
-                . venv/bin/activate
-                pytest -q --disable-warnings
-            '''
+        stage('Test') {
+            steps {
+                dir('python-app') {
+                    sh '''
+                        echo "🧪 Running tests..."
+                        pytest -q --disable-warnings
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                dir('python-app') {
+                    sh '''
+                        echo "🚀 Deploying application..."
+                        mkdir -p $DEPLOY_DIR
+                        cp -r app.py $DEPLOY_DIR/
+                        echo "✅ App deployed to $DEPLOY_DIR"
+                    '''
+                }
+            }
         }
     }
 }
