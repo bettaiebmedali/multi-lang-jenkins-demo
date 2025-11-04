@@ -1,0 +1,15 @@
+pipeline {
+    agent any
+    stages {
+        stage('Install') {
+            steps {
+                sh 'composer install --no-interaction'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh './vendor/bin/phpunit --color=never --verbose'
+            }
+        }
+    }
+}
