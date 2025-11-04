@@ -6,21 +6,27 @@ pipeline {
     stages {
         stage('Install') {
             steps {
-                sh 'pip install -r requirements.txt'
+                dir('python-app') {
+                    sh 'pip install -r requirements.txt'
+                }
             }
         }
         stage('Test') {
             steps {
-                sh 'pytest -q --disable-warnings'
+                dir('python-app') {
+                    sh 'pytest -q --disable-warnings'
+                }
             }
         }
         stage('Deploy') {
             steps {
-                sh '''
-                    mkdir -p $DEPLOY_DIR
-                    cp -r app.py $DEPLOY_DIR/
-                    echo "App deployed to $DEPLOY_DIR"
-                '''
+                dir('python-app') {
+                    sh '''
+                        mkdir -p $DEPLOY_DIR
+                        cp -r app.py $DEPLOY_DIR/
+                        echo "App deployed to $DEPLOY_DIR"
+                    '''
+                }
             }
         }
     }
