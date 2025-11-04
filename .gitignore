@@ -1,0 +1,40 @@
+# Global ignores for multi-lang-jenkins-demo
+
+# OS / IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Logs and temp files
+*.log
+*.tmp
+*.bak
+
+# Python environments
+venv/
+.venv/
+
+# Node modules (in case of multiple apps)
+node_modules/
+
+# Maven / Gradle build dirs
+target/
+build/
+
+# PHP dependencies
+vendor/
+
+# Go build outputs
+bin/
+*.exe
+*.out
+
+# Coverage / test cache
+coverage/
+.pytest_cache/
+.phpunit.result.cache
+
+# Other
+.env
