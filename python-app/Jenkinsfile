@@ -78,7 +78,7 @@ pipeline {
                 """,
                 attachmentsPattern: 'python-app/reports/test-report.html',
                 mimeType: 'text/html',
-                to: 'ton.email@gmail.com'
+                to: 'bitboxtraining@gmail.com'
             )
         }
 
@@ -95,7 +95,7 @@ pipeline {
                     <p><a href="${env.BUILD_URL}">View in Jenkins</a></p>
                 """,
                 mimeType: 'text/html',
-                to: 'ton.email@gmail.com'
+                to: 'bitboxtraining@gmail.com'
             )
         }
 
